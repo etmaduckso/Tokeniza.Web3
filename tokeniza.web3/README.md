@@ -3,9 +3,6 @@
 [![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)](https://github.com/yourusername/tokeniza.web3)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-<p align="center">
-  <img src="Uploads/image.png" alt="Logo do Tokeniza.web3" width="300">
-</p>
 
 ## 📝 Visão Geral
 
