@@ -1,4 +1,3 @@
-
 // Configuração dos contratos
 export const CONTRACT_ADDRESSES = {
   // Endereços de desenvolvimento local (Anvil)
@@ -28,6 +27,9 @@ export const RPC_URLS = {
   production: 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
 };
 
+// Backend API URL
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081/api';
+
 // Configuração da rede
 export const NETWORK_CONFIG = {
   development: {
@@ -51,3 +53,4 @@ export const CURRENT_ENV = process.env.NEXT_PUBLIC_NETWORK_ENV || 'development';
 export const getContractAddresses = () => CONTRACT_ADDRESSES[CURRENT_ENV as keyof typeof CONTRACT_ADDRESSES];
 export const getRpcUrl = () => RPC_URLS[CURRENT_ENV as keyof typeof RPC_URLS];
 export const getNetworkConfig = () => NETWORK_CONFIG[CURRENT_ENV as keyof typeof NETWORK_CONFIG];
+export const getApiUrl = () => API_URL;
