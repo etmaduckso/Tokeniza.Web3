@@ -3,7 +3,6 @@
 [![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)](https://github.com/yourusername/tokeniza.web3)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-
 ## 📝 Visão Geral
 
 O **Tokeniza.web3** é uma plataforma educativa e funcional para a tokenização de ativos do mundo real utilizando tecnologias blockchain. A plataforma permite a criação, gestão e negociação de tokens representativos de ativos reais (imóveis, obras de arte, commodities, etc.) de forma transparente, segura e em conformidade com regulamentações relevantes.
@@ -24,6 +23,7 @@ O **Tokeniza.web3** é uma plataforma educativa e funcional para a tokenização
 - **Estilização**: TailwindCSS
 - **Estado**: Zustand
 - **Web3**: ethers.js, wagmi
+- **UI**: Radix UI, lucide-react, class-variance-authority, next-themes
 
 ### Backend
 - **Framework**: Axum (Rust)
@@ -59,16 +59,18 @@ cd tokeniza.web3
 ```powershell
 cd tokenizacao-app/app
 npm install
-cp .env.example .env.local
-# Configure as variáveis de ambiente necessárias
+# Instale dependências extras se necessário
+npm install @radix-ui/react-radio-group @radix-ui/react-select @radix-ui/react-icons @radix-ui/react-toast @radix-ui/react-dialog @radix-ui/react-dropdown-menu @radix-ui/react-popover @radix-ui/react-switch @radix-ui/react-tabs @radix-ui/react-tooltip next-themes lucide-react class-variance-authority tailwind-merge tailwindcss-animate
+cp ..\.env.example .env.local
+# Configure as variáveis de ambiente necessárias (RPC_URL, CONTRACT_ADDRESS, etc)
 ```
 
 3. **Configuração do Backend**
 
 ```powershell
-cd ../backend
+cd ../../backend
 cp .env.example .env
-# Configure as variáveis de ambiente necessárias
+# Configure as variáveis de ambiente necessárias (DB_URL, etc)
 cargo build
 ```
 
@@ -78,42 +80,66 @@ cargo build
 cd ../onchain
 forge install
 cp .env.example .env
-# Configure as variáveis de ambiente necessárias
+# Configure as variáveis de ambiente necessárias (PRIVATE_KEY, RPC_URL, etc)
 ```
 
 ### Executando o Projeto
 
-1. **Iniciar o Ambiente de Blockchain Local**
+1. **Iniciar o Ambiente de Blockchain Local/Testnet**
 
 ```powershell
-cd tokenizacao-app/onchain
+cd ../onchain
+# Para ambiente local:
 ./script/start_anvil.sh
+# Para testnet (exemplo Sepolia):
+# Configure .env com RPC_URL e PRIVATE_KEY da testnet
 ```
 
 2. **Deployar os Contratos**
 
 ```powershell
-cd tokenizacao-app/onchain
+cd ../onchain
+# Local:
 ./script/deploy_local.sh
+# Testnet (exemplo Sepolia):
+forge script script/DeployContracts.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify
 ```
 
-3. **Iniciar o Backend**
+3. **Atualize o Frontend com os endereços dos contratos**
+
+- Edite `.env.local` em `tokenizacao-app/app` com os endereços dos contratos deployados.
+
+4. **Iniciar o Backend**
 
 ```powershell
-cd tokenizacao-app/backend
+cd ../backend
 cargo run
 ```
 
-4. **Iniciar o Frontend**
+5. **Iniciar o Frontend**
 
 ```powershell
-cd tokenizacao-app/app
+cd ../app
 npm run dev
 ```
 
-5. **Acesse a aplicação**
+6. **Acesse a aplicação**
 
 Abra seu navegador e acesse `http://localhost:3000`
+
+## 🌐 Deploy em Testnet
+
+- Configure `.env` e `.env.local` para usar endpoints e contratos da testnet (Sepolia, Goerli, etc).
+- Use faucet para obter ETH de teste para sua wallet.
+- Certifique-se de que a wallet (MetaMask) está conectada à mesma testnet.
+- Teste todas as interações (compra, waitlist, etc) usando a testnet.
+
+## 🛠️ Troubleshooting
+
+- **Erro de dependências**: Rode `npm install` novamente no frontend.
+- **Tela branca no marketplace**: Certifique-se de que todas as dependências do Radix UI e Zustand estão instaladas e que o backend/blockchain estão rodando.
+- **Problemas de conexão com a blockchain**: Verifique se o RPC_URL está correto e se há saldo na wallet de teste.
+- **Problemas de build**: Rode `npm run build` para ver mensagens detalhadas.
 
 ## 📚 Documentação
 
