@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { ethers } from 'ethers';
+import { ethers, BrowserProvider, JsonRpcProvider, formatEther, parseEther } from 'ethers';
 import { getContractAddresses, getRpcUrl } from './config';
 
 // Importar ABIs
@@ -45,7 +45,7 @@ export interface WaitlistEntry {
 
 // Hook para obter o provedor e o signer
 export function useEthers() {
-  const [provider, setProvider] = useState<ethers.providers.Web3Provider | null>(null);
+  const [provider, setProvider] = useState<BrowserProvider | JsonRpcProvider | null>(null);
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
   const [account, setAccount] = useState<string | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
@@ -54,31 +54,33 @@ export function useEthers() {
   useEffect(() => {
     const init = async () => {
       // Verificar se o window.ethereum está disponível
-      if (typeof window !== 'undefined' && window.ethereum) {
-        try {
+      if (typeof window !== 'undefined' && window.ethereum) {        try {
           // Solicitar acesso à carteira
           const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
-          const ethersSigner = ethersProvider.getSigner();
+          const ethersProvider = new BrowserProvider(window.ethereum);
+          const ethersSigner = await ethersProvider.getSigner();
           const network = await ethersProvider.getNetwork();
 
           setProvider(ethersProvider);
           setSigner(ethersSigner);
           setAccount(accounts[0]);
-          setChainId(network.chainId);
+          setChainId(Number(network.chainId));
           setIsConnected(true);
 
           // Ouvir eventos de mudança de conta
-          window.ethereum.on('accountsChanged', (newAccounts: string[]) => {
-            setAccount(newAccounts[0]);
-            setSigner(ethersProvider.getSigner());
-          });
+          if (window.ethereum?.on) {
+            window.ethereum.on('accountsChanged', async (newAccounts: string[]) => {
+              setAccount(newAccounts[0]);
+              const newSigner = await ethersProvider.getSigner();
+              setSigner(newSigner);
+            });
 
-          // Ouvir eventos de mudança de rede
-          window.ethereum.on('chainChanged', (newChainId: string) => {
-            setChainId(parseInt(newChainId, 16));
-            window.location.reload();
-          });
+            // Ouvir eventos de mudança de rede
+            window.ethereum.on('chainChanged', (newChainId: string) => {
+              setChainId(parseInt(newChainId, 16));
+              window.location.reload();
+            });
+          }
         } catch (error) {
           console.error('Erro ao conectar à carteira:', error);
         }
@@ -86,7 +88,7 @@ export function useEthers() {
         console.warn('MetaMask não encontrado. Por favor, instale a extensão MetaMask.');
         
         // Usar provedor somente leitura para fallback
-        const fallbackProvider = new ethers.providers.JsonRpcProvider(getRpcUrl());
+        const fallbackProvider = new JsonRpcProvider(getRpcUrl());
         setProvider(fallbackProvider);
       }
     };
@@ -95,9 +97,10 @@ export function useEthers() {
 
     return () => {
       // Limpar listeners quando o componente for desmontado
-      if (window.ethereum) {
-        window.ethereum.removeAllListeners('accountsChanged');
-        window.ethereum.removeAllListeners('chainChanged');
+      if (window.ethereum) {        if (window.ethereum?.removeListener) {
+          window.ethereum.removeListener('accountsChanged', () => {});
+          window.ethereum.removeListener('chainChanged', () => {});
+        }
       }
     };
   }, []);
@@ -144,7 +147,7 @@ export function useAssetToken() {
         tokenId,
         owner,
         assetType: assetInfo.assetType,
-        assetValue: ethers.utils.formatEther(assetInfo.assetValue),
+        assetValue: formatEther(assetInfo.assetValue),
         assetLocation: assetInfo.assetLocation,
         isVerified: assetInfo.isVerified,
         tokenURI,
@@ -167,7 +170,7 @@ export function useAssetToken() {
     if (!contract || !signer) return null;
 
     try {
-      const valueInWei = ethers.utils.parseEther(assetValue);
+      const valueInWei = parseEther(assetValue);
       const tx = await contract.mintAsset(to, uri, assetType, valueInWei, assetLocation);
       const receipt = await tx.wait();
 
@@ -225,10 +228,8 @@ export function useMarketplace() {
     try {
       // Aprovar o marketplace para transferir o token
       const approveTx = await assetTokenContract.approve(addresses.marketplace, tokenId);
-      await approveTx.wait();
-
-      // Listar o ativo
-      const priceInWei = ethers.utils.parseEther(price);
+      await approveTx.wait();      // Listar o ativo
+      const priceInWei = parseEther(price);
       const tx = await contract.listAsset(addresses.assetToken, tokenId, priceInWei);
       await tx.wait();
       return true;
@@ -240,10 +241,8 @@ export function useMarketplace() {
 
   // Função para comprar um ativo listado
   const buyAsset = async (tokenId: number, price: string): Promise<boolean> => {
-    if (!contract || !signer) return false;
-
-    try {
-      const priceInWei = ethers.utils.parseEther(price);
+    if (!contract || !signer) return false;    try {
+      const priceInWei = parseEther(price);
       const tx = await contract.buyAsset(addresses.assetToken, tokenId, {
         value: priceInWei,
       });
@@ -278,7 +277,7 @@ export function useMarketplace() {
       return {
         tokenId,
         seller: listing.seller,
-        price: ethers.utils.formatEther(listing.price),
+        price: formatEther(listing.price),
         active: listing.active,
         nftContract: addresses.assetToken,
       };

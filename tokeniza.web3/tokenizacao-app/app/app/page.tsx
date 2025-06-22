@@ -88,19 +88,27 @@ export default function Home() {
             </Card>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
+      </section>      {/* CTA Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8">
             Pronto para começar sua jornada na tokenização?
           </h2>
-          <Link href="/simulation">
-            <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700">
-              Começar Agora
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/simulation">
+              <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700">
+                Começar Simulação
+              </Button>
+            </Link>
+            <Link href="/testnet">
+              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                Testar na zkSync Sepolia
+              </Button>
+            </Link>
+          </div>
+          <p className="text-sm text-gray-600 mt-4">
+            Use a simulação para aprender ou teste com contratos reais na rede de teste
+          </p>
         </div>
       </section>
     </div>

@@ -1,4 +1,3 @@
-\
 import { getApiUrl } from './contracts/config';
 import { Asset, TokenizeAssetRequest, CreateAssetRequest } from './types'; // Assuming you have these types defined
 

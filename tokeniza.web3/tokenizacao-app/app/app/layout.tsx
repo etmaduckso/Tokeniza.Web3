@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 import { WalletConnect } from "@/components/wallet-connect";
+import { NetworkSelector } from "@/components/network-selector";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,18 +35,22 @@ export default function RootLayout({
                 </Link>
                 <Link href="/learn" className="hover:text-blue-600">
                   Aprenda
-                </Link>
-                <Link href="/simulation" className="hover:text-blue-600">
+                </Link>                <Link href="/simulation" className="hover:text-blue-600">
                   Simulação
+                </Link>
+                <Link href="/testnet" className="hover:text-blue-600">
+                  Testnet
                 </Link>
                 <Link href="/tokenize" className="hover:text-blue-600">
                   Tokenize seus Ativos
                 </Link>
                 <Link href="/marketplace" className="hover:text-blue-600">
                   Marketplace
-                </Link>
+                </Link>              </div>
+              <div className="flex items-center space-x-3">
+                <NetworkSelector />
+                <WalletConnect />
               </div>
-              <WalletConnect />
             </div>
           </nav>
           {children}

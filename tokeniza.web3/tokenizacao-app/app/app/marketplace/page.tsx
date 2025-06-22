@@ -151,12 +151,7 @@ export default function MarketplacePage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [purchaseAmount, setPurchaseAmount] = useState<Record<string, string>>({});
   const { toast } = useToast();
-  const { getWaitlistCountForAsset, hydrate } = useWaitlistStore();
-
-  // Corrige hidratação do Zustand/localStorage
-  useEffect(() => {
-    hydrate();
-  }, [hydrate]);
+  const { getWaitlistCountForAsset } = useWaitlistStore();
 
   // Initialize waitlist counts for display
   useEffect(() => {

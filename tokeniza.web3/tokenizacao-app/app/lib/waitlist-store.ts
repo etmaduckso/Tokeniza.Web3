@@ -12,12 +12,11 @@ interface WaitlistState {
   removeFromWaitlist: (assetId: string, userAddress: string) => void;
   isInWaitlist: (assetId: string, userAddress: string) => boolean;
   getWaitlistCountForAsset: (assetId: string) => number;
-  hydrate: () => void;
 }
 
 export const useWaitlistStore = create<WaitlistState>((set, get) => ({
   waitlistEntries: [],
-
+  
   addToWaitlist: (assetId, userAddress) => {
     // Check if already in waitlist
     if (get().isInWaitlist(assetId, userAddress)) {
@@ -37,9 +36,7 @@ export const useWaitlistStore = create<WaitlistState>((set, get) => ({
     
     // Store in localStorage for persistence
     const updatedEntries = [...get().waitlistEntries];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('waitlistEntries', JSON.stringify(updatedEntries));
-    }
+    localStorage.setItem('waitlistEntries', JSON.stringify(updatedEntries));
   },
   
   removeFromWaitlist: (assetId, userAddress) => {
@@ -51,9 +48,7 @@ export const useWaitlistStore = create<WaitlistState>((set, get) => ({
     
     // Update localStorage
     const updatedEntries = [...get().waitlistEntries];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('waitlistEntries', JSON.stringify(updatedEntries));
-    }
+    localStorage.setItem('waitlistEntries', JSON.stringify(updatedEntries));
   },
   
   isInWaitlist: (assetId, userAddress) => {
@@ -65,18 +60,17 @@ export const useWaitlistStore = create<WaitlistState>((set, get) => ({
   getWaitlistCountForAsset: (assetId) => {
     return get().waitlistEntries.filter((entry) => entry.assetId === assetId).length;
   },
-  
-  hydrate: () => {
-    if (typeof window !== 'undefined') {
-      const storedEntries = localStorage.getItem('waitlistEntries');
-      if (storedEntries) {
-        try {
-          const parsedEntries = JSON.parse(storedEntries);
-          set({ waitlistEntries: parsedEntries });
-        } catch (error) {
-          console.error('Error parsing stored waitlist entries:', error);
-        }
-      }
-    }
-  },
 }));
+
+// Initialize from localStorage if available
+if (typeof window !== 'undefined') {
+  const storedEntries = localStorage.getItem('waitlistEntries');
+  if (storedEntries) {
+    try {
+      const parsedEntries = JSON.parse(storedEntries);
+      useWaitlistStore.setState({ waitlistEntries: parsedEntries });
+    } catch (error) {
+      console.error('Error parsing stored waitlist entries:', error);
+    }
+  }
+}

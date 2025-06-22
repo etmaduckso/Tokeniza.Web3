@@ -13,6 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useWalletStore } from "@/lib/wallet-store";
+import { useAccessFeeStore } from "@/lib/access-fee-store";
+import { AccessFeePayment } from "@/components/access-fee-payment";
 
 const platforms = [
   { id: "securitize", name: "Securitize" },
@@ -39,21 +41,19 @@ export default function SimulationPage() {
   const [tokenCount, setTokenCount] = useState("");
   const [tokenValue, setTokenValue] = useState("");
   const [useCustomTokenValue, setUseCustomTokenValue] = useState(false);
-  const [accessPaid, setAccessPaid] = useState(false);
-  const [isDevelopment, setIsDevelopment] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { isConnected } = useWalletStore();
+  const { isConnected, address } = useWalletStore();
+  const { isPaid, checkPaymentStatus } = useAccessFeeStore();
 
   useEffect(() => {
-    // Check if we're in development mode
-    if (process.env.NODE_ENV === "development") {
-      setIsDevelopment(true);
+    // Verificar status do pagamento quando conectar/trocar de conta
+    if (isConnected && address) {
+      checkPaymentStatus(address);
     }
-  }, []);
-
+  }, [isConnected, address, checkPaymentStatus]);
   const handleNext = () => {
-    if (step === 1 && !accessPaid) {
+    if (step === 1 && !isPaid) {
       toast({
         title: "Acesso não autorizado",
         description: "É necessário pagar a taxa de acesso para continuar.",
@@ -119,24 +119,13 @@ export default function SimulationPage() {
       setStep(step - 1);
     }
   };
-
   const handlePayAccess = () => {
-    if (!isConnected && !isDevelopment) {
-      toast({
-        title: "Wallet não conectada",
-        description: "É necessário conectar sua wallet para pagar a taxa de acesso.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+    // Esta função agora é tratada pelo componente AccessFeePayment
     toast({
-      title: "Taxa de acesso paga",
-      description: isDevelopment 
-        ? "Modo de desenvolvimento: Taxa simulada com sucesso." 
-        : "Pagamento de $0,01 processado com sucesso.",
+      title: "Use o componente de pagamento",
+      description: "Use o formulário de pagamento acima para pagar a taxa.",
+      variant: "default",
     });
-    setAccessPaid(true);
   };
 
   const calculateTokenValue = () => {
@@ -186,41 +175,17 @@ export default function SimulationPage() {
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-8">
           Simulação de Tokenização
-        </h1>
-
-        <div className="max-w-2xl mx-auto">
-          {!accessPaid && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Taxa de Acesso</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p>
-                  Para utilizar nossa plataforma de simulação, é necessário pagar uma taxa simbólica de $0,01.
-                  Este valor será utilizado para manter a infraestrutura da plataforma.
-                </p>
-                {isDevelopment && (
-                  <div className="bg-yellow-50 p-3 rounded-md mb-2">
-                    <p className="text-yellow-800 text-sm">
-                      Modo de desenvolvimento: A taxa pode ser simulada sem conexão com wallet.
-                    </p>
-                  </div>
-                )}
-                {!isConnected && !isDevelopment && (
-                  <div className="bg-blue-50 p-3 rounded-md mb-2">
-                    <p className="text-blue-800 text-sm">
-                      É necessário conectar sua wallet para pagar a taxa de acesso.
-                    </p>
-                  </div>
-                )}
-                <Button onClick={handlePayAccess}>
-                  Pagar Taxa de Acesso ($0,01)
-                </Button>
-              </CardContent>
-            </Card>
+        </h1>        <div className="max-w-2xl mx-auto">
+          {!isPaid && (
+            <AccessFeePayment onPaymentSuccess={() => {
+              toast({
+                title: "Pagamento confirmado! 🎉",
+                description: "Agora você pode acessar a simulação de tokenização.",
+              });
+            }} />
           )}
 
-          {accessPaid && step === 1 && (
+          {isPaid && step === 1 && (
             <Card>
               <CardHeader>
                 <CardTitle>Escolha a Plataforma</CardTitle>
@@ -241,7 +206,7 @@ export default function SimulationPage() {
             </Card>
           )}
 
-          {accessPaid && step === 2 && (
+          {isPaid && step === 2 && (
             <Card>
               <CardHeader>
                 <CardTitle>Selecione o Tipo de Ativo</CardTitle>
@@ -262,7 +227,7 @@ export default function SimulationPage() {
             </Card>
           )}
 
-          {accessPaid && step === 3 && (
+          {isPaid && step === 3 && (
             <Card>
               <CardHeader>
                 <CardTitle>Configure os Parâmetros</CardTitle>
@@ -333,7 +298,7 @@ export default function SimulationPage() {
             </Card>
           )}
 
-          {accessPaid && step === 4 && (
+          {isPaid && step === 4 && (
             <Card>
               <CardHeader>
                 <CardTitle>Resumo da Tokenização</CardTitle>
